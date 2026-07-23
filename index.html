@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marcador de Docenas · Ruleta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --felt-1:#0b3d2e;
+    --felt-2:#072921;
+    --gold:#c9a227;
+    --gold-bright:#e8c34d;
+    --red:#a6192e;
+    --green:#0e6b3f;
+    --cream:#ede6d6;
+    --cream-dim:#b9b2a2;
+    --panel:#0e2e24;
+    --panel-border:#1c5443;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #0f4a38 0%, transparent 60%),
+      linear-gradient(180deg, var(--felt-1), var(--felt-2) 70%);
+    background-attachment:fixed;
+    font-family:'Inter',sans-serif;
+    color:var(--cream);
+    padding:24px 16px 60px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+
+  header{text-align:center;margin-bottom:22px;}
+  h1{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(34px,6vw,52px);
+    letter-spacing:2px;
+    margin:0;
+    color:var(--gold-bright);
+    text-shadow:0 2px 12px rgba(0,0,0,.4);
+  }
+  header p{
+    margin:4px 0 0;
+    color:var(--cream-dim);
+    font-size:14px;
+    letter-spacing:.3px;
+  }
+
+  .config{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin:16px auto 26px;
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:12px;
+    padding:10px 16px;
+    max-width:420px;
+  }
+  .config label{font-size:13px;color:var(--cream-dim);}
+  .config input{
+    width:56px;
+    background:#04140f;
+    border:1px solid var(--panel-border);
+    color:var(--gold-bright);
+    font-family:'Bebas Neue',sans-serif;
+    font-size:20px;
+    text-align:center;
+    border-radius:8px;
+    padding:4px 0;
+  }
+
+  /* Dozens panels */
+  .docenas{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin-bottom:14px;
+  }
+  .docena-card{
+    background:linear-gradient(160deg,var(--panel),#0a251d);
+    border:1px solid var(--panel-border);
+    border-radius:14px;
+    padding:16px 10px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+    transition:border-color .25s, box-shadow .25s, transform .25s;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    user-select:none;
+  }
+  .docena-card:active{transform:scale(.96);}
+  .docena-card .nombre{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:20px;
+    letter-spacing:1px;
+    color:var(--cream);
+  }
+  .docena-card .rango{
+    font-size:11px;
+    color:var(--cream-dim);
+    margin-top:-2px;
+  }
+  .docena-card .racha{
+    margin-top:8px;
+  }
+  .docena-card .racha b{
+    display:block;
+    font-family:'Bebas Neue',sans-serif;
+    font-size:44px;
+    color:var(--gold-bright);
+    line-height:1.1;
+  }
+  .docena-card .racha span{
+    font-size:12px;
+    color:var(--cream-dim);
+    font-weight:600;
+    letter-spacing:.4px;
+  }
+  .docena-card.alerta{
+    border-color:var(--red);
+    background:linear-gradient(160deg,#3a0f16,#1a0709);
+    box-shadow:0 0 0 1px var(--red), 0 0 22px rgba(166,25,46,.55);
+    animation:pulse 1.4s ease-in-out infinite;
+  }
+  .docena-card.alerta .racha b{color:#ff5468;}
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 1px var(--red), 0 0 14px rgba(166,25,46,.4);}
+    50%{box-shadow:0 0 0 1px var(--red), 0 0 32px rgba(166,25,46,.85);}
+  }
+
+  /* Zero button */
+  .cero-wrap{
+    display:flex;
+    justify-content:center;
+    margin-bottom:26px;
+  }
+  .btn-cero{
+    background:var(--green);
+    border:1px solid var(--panel-border);
+    border-radius:12px;
+    color:#fff;
+    font-family:'Bebas Neue',sans-serif;
+    font-size:20px;
+    letter-spacing:1px;
+    padding:10px 26px;
+    cursor:pointer;
+    display:flex;align-items:center;gap:8px;
+    transition:filter .15s, transform .08s;
+  }
+  .btn-cero:hover{filter:brightness(1.15);}
+  .btn-cero:active{transform:scale(.96);}
+  .btn-cero span{
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:700;
+    color:#dff5ea;
+  }
+
+  /* Mini history strip */
+  .historial{
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:14px;
+    padding:12px 14px;
+    margin-bottom:18px;
+  }
+  .historial-head{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;
+  }
+  .historial-head h2{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:14px;
+    letter-spacing:1px;
+    margin:0;
+    color:var(--cream-dim);
+  }
+  .historial-head h2 span{color:var(--gold-bright);}
+  .lista{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:6px;
+    min-height:30px;
+  }
+  .chip{
+    width:30px;height:30px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Bebas Neue',sans-serif;
+    font-size:14px;
+    color:#fff;
+    flex:0 0 auto;
+  }
+  .chip.d1{background:#1c5443;}
+  .chip.d2{background:#8a6d1a;}
+  .chip.d3{background:#5a3a8a;}
+  .chip.cero{background:var(--green);}
+  .vacio{color:var(--cream-dim);font-size:12px;padding:6px 2px;}
+
+  .acciones{
+    display:flex;
+    gap:0;
+  }
+  .acciones button{
+    background:transparent;
+    border:1px solid var(--panel-border);
+    color:var(--cream-dim);
+    font-size:12px;
+    padding:6px 10px;
+    border-radius:8px;
+    cursor:pointer;
+    margin-left:6px;
+    font-weight:600;
+    transition:border-color .2s, color .2s;
+  }
+  .acciones button:hover{border-color:var(--gold);color:var(--gold-bright);}
+
+  footer{
+    text-align:center;
+    margin-top:24px;
+    color:var(--cream-dim);
+    font-size:12px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Marcador de Docenas</h1>
+    <p>Toca la docena que salga y sigue el ritmo de cada una</p>
+  </header>
+
+  <div class="config">
+    <label for="umbral">Avisar cuando lleve</label>
+    <input type="number" id="umbral" min="1" value="5">
+    <label for="umbral">tiradas sin salir</label>
+  </div>
+
+  <div class="docenas" id="docenas"></div>
+
+  <div class="cero-wrap">
+    <button class="btn-cero" id="btn-cero">0 <span id="cero-racha">(0)</span></button>
+  </div>
+
+  <div class="historial">
+    <div class="historial-head">
+      <h2>HISTORIAL <span id="contador-historial">(0)</span></h2>
+      <div class="acciones">
+        <button id="deshacer">Deshacer último</button>
+        <button id="reiniciar">Reiniciar todo</button>
+      </div>
+    </div>
+    <div class="lista" id="lista"></div>
+  </div>
+
+  <footer>Los datos se guardan en este navegador — al recargar la página se mantienen. Otro usuario u otro dispositivo no verá estos resultados.</footer>
+</div>
+
+<script>
+  const STORAGE_KEY = 'marcador_docenas_v1';
+
+  function estadoInicial(){
+    return {
+      // pila de acciones para poder deshacer (0, 1, 2 o 3), sin guardar números
+      acciones: [],
+      cero: {racha:0},
+      docenas: {
+        1: {racha:0, nombre:"1ª DOCENA", rango:"1 – 12"},
+        2: {racha:0, nombre:"2ª DOCENA", rango:"13 – 24"},
+        3: {racha:0, nombre:"3ª DOCENA", rango:"25 – 36"}
+      }
+    };
+  }
+
+  function cargarEstado(){
+    try{
+      const guardado = localStorage.getItem(STORAGE_KEY);
+      if(!guardado) return estadoInicial();
+      const parsed = JSON.parse(guardado);
+      if(!Array.isArray(parsed.acciones)) return estadoInicial();
+      const base = estadoInicial();
+      base.acciones = parsed.acciones;
+      return base;
+    } catch(e){
+      return estadoInicial();
+    }
+  }
+
+  function guardarEstado(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({acciones: state.acciones}));
+    } catch(e){
+      // almacenamiento no disponible (modo privado, cuota llena, etc.) — se sigue usando en memoria
+    }
+  }
+
+  const state = cargarEstado();
+
+  function registrar(docena){
+    // docena: 0 (cero) o 1/2/3
+    state.acciones.push(docena);
+
+    if(docena === 0){
+      // el 0 no afecta a la racha de las docenas, solo reinicia la suya propia
+      state.cero.racha = 0;
+    } else {
+      state.cero.racha++;
+      for(const key of [1,2,3]){
+        if(key === docena){
+          state.docenas[key].racha = 0;
+        } else {
+          state.docenas[key].racha++;
+        }
+      }
+    }
+    guardarEstado();
+    render();
+  }
+
+  function deshacer(){
+    if(state.acciones.length === 0) return;
+    state.acciones.pop();
+    guardarEstado();
+    recalcularTodo();
+  }
+
+  function reiniciar(){
+    if(!confirm("¿Seguro que quieres reiniciar todos los contadores?")) return;
+    state.acciones = [];
+    guardarEstado();
+    recalcularTodo();
+  }
+
+  function recalcularTodo(){
+    // recalcula todo desde cero a partir de la pila de acciones (para que Deshacer sea fiable)
+    state.docenas[1].racha = 0;
+    state.docenas[2].racha = 0;
+    state.docenas[3].racha = 0;
+    state.cero.racha = 0;
+
+    for(const docena of state.acciones){
+      if(docena === 0){
+        state.cero.racha = 0;
+      } else {
+        state.cero.racha++;
+        for(const key of [1,2,3]){
+          if(key === docena){
+            state.docenas[key].racha = 0;
+          } else {
+            state.docenas[key].racha++;
+          }
+        }
+      }
+    }
+    render();
+  }
+
+  function render(){
+    const umbral = parseInt(document.getElementById('umbral').value) || 5;
+
+    const cont = document.getElementById('docenas');
+    cont.innerHTML = '';
+    for(const key of [1,2,3]){
+      const d = state.docenas[key];
+      const alerta = d.racha >= umbral;
+      const card = document.createElement('div');
+      card.className = 'docena-card' + (alerta ? ' alerta' : '');
+      card.innerHTML = `
+        <div class="nombre">${d.nombre}</div>
+        <div class="rango">${d.rango}</div>
+        <div class="racha"><b>${d.racha}</b><span>TIRADAS SIN SALIR</span></div>
+      `;
+      card.addEventListener('click', ()=>registrar(key));
+      cont.appendChild(card);
+    }
+
+    document.getElementById('cero-racha').textContent = `(${state.cero.racha})`;
+
+    // Historial (fichas de docena/cero, más reciente primero)
+    document.getElementById('contador-historial').textContent = `(${state.acciones.length})`;
+    const lista = document.getElementById('lista');
+    if(state.acciones.length === 0){
+      lista.innerHTML = '<div class="vacio">Aún no has registrado ninguna tirada.</div>';
+    } else {
+      lista.innerHTML = '';
+      const etiquetas = {0:'0', 1:'1ª', 2:'2ª', 3:'3ª'};
+      const clases = {0:'cero', 1:'d1', 2:'d2', 3:'d3'};
+      for(let i = state.acciones.length - 1; i >= 0; i--){
+        const docena = state.acciones[i];
+        const chip = document.createElement('div');
+        chip.className = 'chip ' + clases[docena];
+        chip.textContent = etiquetas[docena];
+        lista.appendChild(chip);
+      }
+    }
+  }
+
+  document.getElementById('btn-cero').addEventListener('click', ()=>registrar(0));
+  document.getElementById('deshacer').addEventListener('click', deshacer);
+  document.getElementById('reiniciar').addEventListener('click', reiniciar);
+  document.getElementById('umbral').addEventListener('input', render);
+
+  recalcularTodo();
+</script>
+</body>
+</html>
